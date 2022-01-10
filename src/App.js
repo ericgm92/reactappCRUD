@@ -6,35 +6,35 @@ import {Modal, ModalBody, ModalFooter, ModalHeader} from 'reactstrap';
 function App() {
 
 const [data, setData]= UseState([]);
-const [modalInsertar, setModalInsertar]=useState(false);
-const [modalEditar, setModalEditar]=useState(false);
-const [modalEliminar, setModalEliminar]=useState(false);
-const baseUrl="https://localhost:44347/api/gestores";
-const [gestorSeleccionado, setGestorSeleccionado]=useState({
+const [modalInsert, setmodalInsert]=useState(false);
+const [modalEdit, setmodalEdit]=useState(false);
+const [modalDelete, setmodalDelete]=useState(false);
+const baseUrl="https://localhost:44347/api/townes";
+const [selectedTown, setselectedTown]=useState({
   id: '',
-  ciudad: '',
-  pais: '',
-  poblacion: ''
+  name: '',
+  country: '',
+  population: ''
 })
 
 const handleChange=e=>{
   const {name, value}=e.target;
-  setGestorSeleccionado({...gestorSeleccionado,[name]: value});
+  setselectedTown({...selectedTown,[name]: value});
 }
 
-const abrirCerrarModalInsertar=()=>{
-  setModalInsertar(!modalInsertar);
+const openClosemodalInsert=()=>{
+  setmodalInsert(!modalInsert);
 }
-const abrirCerrarModalEditar=()=>{
-  setModalEditar(!modalEditar);
+const openClosemodalEdit=()=>{
+  setmodalEdit(!modalEdit);
 }
-const abrirCerrarModalEliminar=()=>{
-  setModalEliminar(!modalEliminar);
+const openClosemodalDelete=()=>{
+  setmodalDelete(!modalDelete);
 }
 
 
 
-const peticionGet=async()=>{
+const requestGet=async()=>{
   await axios.get(baseUrl)
   .then(response=>{
     setData(response.data);
@@ -43,59 +43,59 @@ const peticionGet=async()=>{
   })
 }
 
-const peticionPost=async()=>{
-  delete gestorSeleccionado.id;
-  gestorSeleccionado.poblacion = parseInt(gestorSeleccionado.poblacion);
-  await axios.post(baseUrl, gestorSeleccionado)
+const requestPost=async()=>{
+  delete selectedTown.id;
+  selectedTown.population = parseInt(selectedTown.population);
+  await axios.post(baseUrl, selectedTown)
   .then(response=>{
     setData(data.concat(response.data));
-    abrirCerrarModalInsertar();
+    openClosemodalInsert();
   }).catch(error=>{
     console.log(error);
   })
 }
 
-const peticionPut=async()=>{
-  gestorSeleccionado.poblacion = parseInt(gestorSeleccionado.poblacion);
-  await axios.post(baseUrl+"/"+gestorSeleccionado.id, gestorSeleccionado)
+const requestPut=async()=>{
+  selectedTown.population = parseInt(selectedTown.population);
+  await axios.post(baseUrl+"/"+selectedTown.id, selectedTown)
   .then(response=>{
-    var respuesta=response.data;
+    var answer=response.data;
     var dataAuxiliar = data;
-    dataAuxiliar.map(gestor=>{
-      if (gestor.id===gestorSeleccionado.id){
-        gestor.ciudad = respuesta.ciudad;
-        gestor.pais= respuesta.pais;
-        gestor.poblacion = respuesta.poblacion;
+    dataAuxiliar.map(town=>{
+      if (town.id===selectedTown.id){
+        town.name = answer.name;
+        town.country= answer.country;
+        town.population = answer.population;
       }
     })
-    abrirCerrarModalEditar();
+    openClosemodalEdit();
   }).catch(error=>{
     console.log(error);
   })
 }
 
-const peticionDelete=async()=>{
-  await axios.post(baseUrl+"/"+gestorSeleccionado.id)
+const requestDelete=async()=>{
+  await axios.post(baseUrl+"/"+selectedTown.id)
   .then(response=>{
-    setData(data.filter(gestor=>gestor.id!==response.data));
-    abrirCerrarModalEliminar();
+    setData(data.filter(town=>town.id!==response.data));
+    openClosemodalDelete();
   }).catch(error=>{
     console.log(error);
   })
 }
 
-const seleccionarGestor=(gestor, caso)=>{
-  setGestorSeleccionado(gestor);
-  (caso==="Editar")?
-  abrirCerrarModalEditar(): abrirCerrarModalEliminar();
+const selecttown=(town, cases)=>{
+  setselectedTown(town);
+  (cases==="Edit")?
+  openClosemodalEdit(): openClosemodalDelete();
 }
 
-useEffect(()=>{peticionGet();},[])
+useEffect(()=>{requestGet();},[])
 
   return (
     <div className="App">
       <br /> <br />
-      <button onClick={()=>abrirCerrarModalInsertar()} className="btn btn-success"> Insert new City</button>
+      <button onClick={()=>openClosemodalInsert()} className="btn btn-success"> Insert new City</button>
       <br /> <br />
       <table className="table table-bordered">
         <thead>
@@ -108,80 +108,80 @@ useEffect(()=>{peticionGet();},[])
           </tr>
         </thead>
         <tbody>
-          {data.map(gestor=>(
-            <tr key={gestor.id}>
-              <td>{gestor.id}</td>
-              <td>{gestor.ciudad}</td>
-              <td>{gestor.pais}</td>
-              <td>{gestor.poblacion}</td>
+          {data.map(town=>(
+            <tr key={town.id}>
+              <td>{town.id}</td>
+              <td>{town.name}</td>
+              <td>{town.country}</td>
+              <td>{town.population}</td>
               <td>
-                <button className="btn btn-primary" onClick={()=>seleccionarGestor(gestor, "Editar")}>Edit</button> {"  "}
-                <button className="btn btn-danger" onClick={()=>seleccionarGestor(gestor, "Eliminar")}>Delete</button> {"  "}
+                <button className="btn btn-primary" onClick={()=>selecttown(town, "Edit")}>Edit</button> {"  "}
+                <button className="btn btn-danger" onClick={()=>selecttown(town, "Delete")}>Delete</button> {"  "}
               </td>
             </tr>
           ))}
         </tbody>
       </table>
 
-      <Modal isOpen={modalInsertar}>
+      <Modal isOpen={modalInsert}>
         <ModalHeader>Insert Data</ModalHeader>
         <ModalBody>
           <div className="form-group">
             <label> City: </label>
             <br />
-            <input type="text" className="form-control" name="ciudad" onchange={handleChange}/>
+            <input type="text" className="form-control" name="name" onchange={handleChange}/>
             <br />
             <label> Country: </label>
             <br />
-            <input type="text" className="form-control" name="pais" onchange={handleChange}/>
+            <input type="text" className="form-control" name="country" onchange={handleChange}/>
             <br />
             <label> Population: </label>
             <br />
-            <input type="text" className="form-control" name="poblacion" onchange={handleChange}/>
+            <input type="text" className="form-control" name="population" onchange={handleChange}/>
             <br />
           </div>
         </ModalBody>
         <ModalFooter>
-          <button className="btn btn-primary" onClick={()=>peticionPost()}>Insert</button>{"  "}
-          <button className="btn btn-danger" onClick={()=>abrirCerrarModalInsertar()}>Cancel</button>
+          <button className="btn btn-primary" onClick={()=>requestPost()}>Insert</button>{"  "}
+          <button className="btn btn-danger" onClick={()=>openClosemodalInsert()}>Cancel</button>
         </ModalFooter>
       </Modal>
 
-      <Modal isOpen={modalEditar}>
+      <Modal isOpen={modalEdit}>
         <ModalHeader>Edit Data</ModalHeader>
         <ModalBody>
           <div className="form-group">
           <label> Id: </label>
             <br />
-            <input type="text" className="form-control" name="id" readonly value={gestorSeleccionado && gestorSeleccionado.id}/>
+            <input type="text" className="form-control" name="id" readonly value={selectedTown && selectedTown.id}/>
             <br />
             <label> City: </label>
             <br />
-            <input type="text" className="form-control" name="ciudad" onchange={handleChange} value={gestorSeleccionado && gestorSeleccionado.ciudad}/>
+            <input type="text" className="form-control" name="name" onchange={handleChange} value={selectedTown && selectedTown.name}/>
             <br />
             <label> Country: </label>
             <br />
-            <input type="text" className="form-control" name="pais" onchange={handleChange} value={gestorSeleccionado && gestorSeleccionado.pais}/>
+            <input type="text" className="form-control" name="country" onchange={handleChange} value={selectedTown && selectedTown.country}/>
             <br />
             <label> Population: </label>
             <br />
-            <input type="text" className="form-control" name="poblacion" onchange={handleChange} value={gestorSeleccionado && gestorSeleccionado.poblacion}/>
+            <input type="text" className="form-control" name="population" onchange={handleChange} value={selectedTown && selectedTown.population}/>
             <br />
           </div>
         </ModalBody>
         <ModalFooter>
-          <button className="btn btn-primary" onClick={()=>peticionPut()}>Edit</button>{"  "}
-          <button className="btn btn-danger" onClick={()=>abrirCerrarModalEditar()}>Cancel</button>
+          <button className="btn btn-primary" onClick={()=>requestPut()}>Edit</button>{"  "}
+          <button className="btn btn-danger" onClick={()=>openClosemodalEdit()}>Cancel</button>
         </ModalFooter>
       </Modal>
 
-      <Modal isOpen={modalEliminar}>
+      <Modal isOpen={modalDelete}>
         <ModalHeader>Delete Data</ModalHeader>
-        <ModalBody> Are you sure to delete {gestorSeleccionado && gestorSeleccionado.ciudad}?
+        <ModalBody> Are you sure to delete {selectedTown && selectedTown.name}?
         </ModalBody>
         <ModalFooter>
-          <button className="btn btn-danger" onClick={()=>peticionDelete()}>Yes</button>
-          <button className="btn btn-secondary" onClick={()=>abrirCerrarModalEliminar()}>No</button>{"  "}
+          <button className="btn btn-danger" onClick={()=>requestDelete()}>Yes</button>
+          <button className="btn btn-secondary" onClick={()=>openClosemodalDelete()}>No</button>{"  "}
         </ModalFooter>
       </Modal>
       
